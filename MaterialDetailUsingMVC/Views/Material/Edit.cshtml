@@ -1,0 +1,155 @@
+﻿@model MaterialDetailUsingMVC.Models.HelperModels.MaterialViewModel
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Model.Id > 0)
+{
+    <h1>Edit</h1>
+}
+else
+{
+    <h1>Create</h1>
+}
+
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" id="materialForm">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <input type="hidden" asp-for="Id" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="MaterialName" class="control-label">Material Name<span style="color :red;">*</span></label>
+                <input asp-for="MaterialName" class="form-control" />
+                <span asp-validation-for="MaterialName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Rate" class="control-label">Rate<span style="color :red;">*</span></label>
+                <input type="number" asp-for="Rate" class="form-control" />
+                <span asp-validation-for="Rate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Consumption" class="control-label">Consumption<span style="color :red;">*</span></label>
+                <input type="number" asp-for="Consumption" class="form-control" />
+                <span asp-validation-for="Consumption" class="text-danger"></span>
+            </div>
+            <div class="form-group" tabindex="0">
+                <label asp-for="TypeId" class="control-label">Type<span style="color :red;">*</span></label>
+                <input type="text" id="TypeIdName" class="form-control" placeholder="Select Type" />
+                <input type="hidden" asp-for="TypeId" id="TypeId" />
+                <div id="typeSuggestions" class="autocomplete-suggestions"></div>
+                <span asp-validation-for="TypeId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UnitId">Unit of Measure<span style="color :red;">*</span></label>
+                <input type="text" id="UnitIdName" class="form-control" placeholder="Select Unit" />
+                <input type="hidden" asp-for="UnitId" id="UnitId" />
+                <div id="unitSuggestions" class="autocomplete-suggestions"></div>
+                <span asp-validation-for="UnitId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ReferenceId" class="control-label">
+                    Reference Number <br />
+                    <span style="color :red;font-size:small;">(Select Generate New if you want Material with new Reference number either select any other Reference number )</span>
+                </label>
+                <input type="text" id="ReferenceIdName" class="form-control" placeholder="Select Reference Id" />
+                <input type="hidden" asp-for="ReferenceId" id="ReferenceId" />
+                <div id="referenceSuggestions" class="autocomplete-suggestions"></div>
+                <span asp-validation-for="ReferenceId" class="text-danger"></span>
+
+            </div>
+            <div class="form-group">
+                @if (Model.Id > 0)
+                {
+                    <input type="submit" value="Update" class="btn btn-primary" />
+                }
+                else
+                {
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                }
+            </div>
+        </form>
+    </div>
+</div>
+<br />
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        const types = @Html.Raw(Json.Serialize(ViewData["Types"]));
+        const units = @Html.Raw(Json.Serialize(ViewData["Units"]));
+        const references = @Html.Raw(Json.Serialize(ViewData["References"]));
+
+        function createSuggestions(query, data, onSelect) {
+            return data
+                .filter(item => item.name.toLowerCase().includes(query.toLowerCase()))
+                .map(item => $(`<div class="autocomplete-item">${item.name}</div>`).on('click', () => {
+                    onSelect(item);
+                    window.itemSelected = true;
+                    $(`#${inputId}`).val(item.name);
+                    $(`#${inputId}`).siblings('input[type="hidden"]').val(item.id);
+                }));
+        }
+
+        function setAutocomplete(inputId, suggestionsId, data) {
+            const $input = $(`#${inputId}`);
+            const $suggestions = $(`#${suggestionsId}`);
+
+            $input.on('input', function () {
+                const query = $(this).val().trim();
+                $suggestions.empty();
+                if (query) {
+                    createSuggestions(query, data, (item) => {
+                        $input.val(item.name);
+                        $input.siblings('input[type="hidden"]').val(item.id);
+                        $suggestions.empty();
+                    }).forEach($suggestion => $suggestions.append($suggestion));
+                }
+            });
+        }
+
+        function resetAutocomplete(inputId, hiddenId, suggestionId, data) {
+            function loadValue() {
+                $(`#${suggestionId}`).empty();
+                const value = $(`#${hiddenId}`).val();
+                const match = data.find(item => item.id == value);
+                if (match) {
+                    $(`#${inputId}`).val(match.name);
+                    $(`#${hiddenId}`).val(match.id);
+                }
+            }
+            loadValue();
+            $(`#${inputId}`).on('blur', function() {
+            setTimeout(function() {
+                if (!window.itemSelected) {
+                    loadValue();
+                }
+                window.itemSelected = false;
+            }, 300);
+            });
+        }
+
+        $(document).ready(function () {
+            setAutocomplete('TypeIdName', 'typeSuggestions', types);
+            setAutocomplete('UnitIdName', 'unitSuggestions', units);
+            setAutocomplete('ReferenceIdName', 'referenceSuggestions', references);
+
+            resetAutocomplete('TypeIdName', 'TypeId', 'typeSuggestions', types);
+            resetAutocomplete('UnitIdName', 'UnitId', 'unitSuggestions', units);
+            resetAutocomplete('ReferenceIdName', 'ReferenceId', 'referenceSuggestions', references);
+        });
+
+
+    </script>
+
+
+}

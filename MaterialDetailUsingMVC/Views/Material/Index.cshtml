@@ -1,0 +1,77 @@
+﻿@model IEnumerable<MaterialDetailUsingMVC.Models.ReferenceDetail>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h5>Reference Data</h5>
+    <div>
+        <a asp-action="Edit" class="btn btn-outline-primary mb-3">Add New Material</a>
+    </div>
+
+    @foreach (var item in Model)
+    {
+        <div class="accordion" id="accordion-@item.Id">
+            <div class="card">
+                <div class="card-header" id="heading-@item.Id">
+                    <h2 class="mb-0">
+                        <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@item.Id" aria-expanded="true" aria-controls="collapse-@item.Id">
+                            Reference Number: @item.ReferenceNumber
+                        </button>
+                    </h2>
+                </div>
+                <div id="collapse-@item.Id" class="collapse" aria-labelledby="heading-@item.Id" data-bs-parent="#accordion-@item.Id">
+                    <div class="card-body">
+                        <p><strong>Reference Date:</strong> @item.ReferenceDate.ToString("g")</p>
+                        <h6>Materials</h6>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Serial No.</th>
+                                    <th>Material Name</th>
+                                    <th>Rate</th>
+                                    <th>Consumption</th>
+                                    <th>Type</th>
+                                    <th>Unit</th>
+                                    <th>Edit</th>
+                                    
+                                        <th>Delete</th>
+                                    
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var material in item.Materials)
+                                {
+                                    <tr>
+                                        <td>@(item.Materials.IndexOf(material) + 1)</td>
+                                        <td>@material.MaterialName</td>
+                                        <td>@material.Rate.ToString("F2")</td>
+                                        <td>@material.Consumption.ToString("F2")</td>
+                                        <td>@material.Types.Name</td>
+                                        <td>@material.Unit.Name</td>
+                                        <td><a asp-action="Edit" asp-route-id="@material.Id" class="btn btn-link">Edit</a></td>
+                                        
+                                            <td>
+                                                <form method="post" asp-action="Delete" asp-route-id="@material.Id" onsubmit="return confirm('Are you sure you want to delete this material?');">
+                                                    <button type="submit" class="btn btn-link text-danger">Delete</button>
+                                                </form>
+                                            </td>
+                                        
+                                    </tr>
+                                }
+                                @if (!item.Materials.Any())
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center">No Material Data</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
